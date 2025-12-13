@@ -13,7 +13,7 @@ Route::prefix('V1')->group(function () {
         Route::post('/lives/{live}/promote', [LiveController::class, 'promote']); // promote viewer -> host
 
         // Token endpoint (returns token based on role param)
-        Route::get('/lives/{live}/token', [LiveTokenController::class, 'token']);
+        Route::get('/livesToken/{live}/token', [LiveTokenController::class, 'token']);
     });
     Route::post('/register', [\App\Http\Controllers\V1\AuthController::class, 'register']);
     Route::post('/login', [\App\Http\Controllers\V1\AuthController::class, 'login']);
