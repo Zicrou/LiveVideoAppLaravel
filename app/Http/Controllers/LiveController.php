@@ -65,7 +65,11 @@ class LiveController extends Controller
                 Log::error('Failed to start CDN push: '.$e->getMessage());
             }
         }
-
+        
+        // Return live with token, Need to store it dans la base données, table live
+       // $tokenLive = $this->token($request, $live);
+        //$live['liveToken'] = $tokenLive->original;
+        
         return response()->json($live);
         // return response()->json($request->user(), 200);
     }
@@ -106,5 +110,30 @@ class LiveController extends Controller
         $live->save();
 
         return response()->json($live);
+    }
+
+    public function token(Request $request, Live $live)
+    {
+        $role = $request->query('role', 'viewer'); // 'host' or 'viewer'
+        $uid = $request->user()->id ?? 0;
+
+        // Option A: call a Node token service you run locally / private (recommended)
+        $nodeTokenServer = config('services.token_server.url'); // e.g. http://127.0.0.1:8080/token
+
+        if ($nodeTokenServer) {
+            $resp = Http::get($nodeTokenServer, [
+                'channel' => $live->channel_name,
+                'uid' => $uid,
+                'role' => $role === 'host' ? 'host' : 'viewer',
+            ]);
+
+            return response()->json($resp->json("token"));
+        }
+
+        // Option B: If you have a PHP token generator, swap here
+        // Example : $token = app('App\Services\AgoraTokenService')->buildToken($live->channel_name, $uid, $role);
+        // return response()->json(['token' => $token]);
+
+        return response()->json(['error' => 'No token server configured'], 500);
     }
 }
