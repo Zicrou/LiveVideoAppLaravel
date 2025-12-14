@@ -3,12 +3,17 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\LiveController;
 use App\Http\Controllers\LiveTokenController;
+
+// $idRegex   = '[0-9]+';
+// $slugRegex = '[0-9a-z\-]+';
 Route::prefix('V1')->group(function () {
 
     Route::middleware('auth:sanctum')->group(function () {
         Route::get('/lives', [LiveController::class, 'index']);
+        Route::get('/getLive', [LiveController::class, 'getLive']);
         Route::post('/lives', [LiveController::class, 'store']);            // create live record
         Route::post('/lives/{live}/start', [LiveController::class, 'start']);
+
         Route::post('/lives/{live}/stop', [LiveController::class, 'stop']);
         Route::post('/lives/{live}/promote', [LiveController::class, 'promote']); // promote viewer -> host
 

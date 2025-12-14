@@ -67,10 +67,10 @@ class LiveController extends Controller
         }
         
         // Return live with token, Need to store it dans la base données, table live
-       // $tokenLive = $this->token($request, $live);
-        //$live['liveToken'] = $tokenLive->original;
+       $tokenLive = $this->token($request, $live);
+        $live['liveToken'] = $tokenLive->original;
         
-        return response()->json($live);
+        return response()->json($live, 200);
         // return response()->json($request->user(), 200);
     }
 
@@ -93,6 +93,14 @@ class LiveController extends Controller
         $live->ended_at = now();
         $live->save();
 
+        return response()->json($live);
+    }
+
+    public function getLive(Request $request)
+    {
+        $live = Live::where('host_user_id', $request->user()->id)
+                    ->where('status', 'live')
+                    ->first();
         return response()->json($live);
     }
 
