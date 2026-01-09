@@ -8,14 +8,15 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Laravel\Sanctum\PersonalAccessToken;
-
-
+// use Agora\RtcTokenBuilder\RtcTokenBuilder;
+use App\Services\Agora\RtcTokenBuilder;
+// use Yasser\Agora\RtcTokenBuilder;
 class LiveController extends Controller
 {
     // List lives (basic)
     public function index()
     {
-        $lives = Live::orderBy('created_at', 'desc')->get();
+        $lives = Live::where('status', 'live')->orderBy('created_at', 'desc')->get();
         return response()->json($lives);
     }
 
@@ -34,7 +35,11 @@ class LiveController extends Controller
             'status' => 'scheduled',
         ]);
 
-        return response()->json($live, 201);
+        $tokenLive = $this->token($request, $live);
+        $live['liveToken'] = $tokenLive->original;
+        $live->save();
+        
+        return response()->json(['lives' => $live], 201);
     }
 
     // Start live: mark live and optionally start CDN push via Agora REST
@@ -69,7 +74,7 @@ class LiveController extends Controller
         // Return live with token, Need to store it dans la base données, table live
        $tokenLive = $this->token($request, $live);
         $live['liveToken'] = $tokenLive->original;
-        
+        $live->save();
         return response()->json($live, 200);
         // return response()->json($request->user(), 200);
     }
@@ -122,26 +127,34 @@ class LiveController extends Controller
 
     public function token(Request $request, Live $live)
     {
-        $role = $request->query('role', 'viewer'); // 'host' or 'viewer'
-        $uid = $request->user()->id ?? 0;
+        $appID = env('AGORA_APP_ID');
+        $appCertificate = env('AGORA_APP_CERTIFICATE');
 
-        // Option A: call a Node token service you run locally / private (recommended)
-        $nodeTokenServer = config('services.token_server.url'); // e.g. http://127.0.0.1:8080/token
+        $channelName = $request->channel;
+        $uid = 0; // let Agora assign
+        $expireTimeInSeconds = 3600;
 
-        if ($nodeTokenServer) {
-            $resp = Http::get($nodeTokenServer, [
-                'channel' => $live->channel_name,
-                'uid' => $uid,
-                'role' => $role === 'host' ? 'host' : 'viewer',
-            ]);
+        $role = $request->role === 'host'
+            ? RtcTokenBuilder::ROLE_PUBLISHER
+            : RtcTokenBuilder::ROLE_SUBSCRIBER;
 
-            return response()->json($resp->json("token"));
-        }
+        $currentTimestamp = time();
+        $privilegeExpiredTs = $currentTimestamp + $expireTimeInSeconds;
 
-        // Option B: If you have a PHP token generator, swap here
-        // Example : $token = app('App\Services\AgoraTokenService')->buildToken($live->channel_name, $uid, $role);
-        // return response()->json(['token' => $token]);
+        $token = RtcTokenBuilder::buildTokenWithUid(
+            $appID,
+            $appCertificate,
+            $channelName,
+            $uid,
+            $role,
+            $privilegeExpiredTs
+        );
 
-        return response()->json(['error' => 'No token server configured'], 500);
+        // $rtcToken = RtcTokenBuilder::buildTokenWithUserAccount($appID, $appCertificate, $channelName, $user, $role, $privilegeExpiredTs);
+
+        return response()->json([
+            'token' => $token,
+            'channel' => $channelName,
+        ]);
     }
 }

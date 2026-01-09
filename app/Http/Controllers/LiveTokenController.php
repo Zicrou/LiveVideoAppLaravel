@@ -10,7 +10,7 @@ class LiveTokenController extends Controller
 {
     public function token(Request $request, Live $live)
     {
-        $role = $request->query('role', 'viewer'); // 'host' or 'viewer'
+        $role = "host"; //$request->query('role', 'host'); // 'host' or 'viewer'
         $uid = $request->user()->id ?? 0;
 
         // Option A: call a Node token service you run locally / private (recommended)
@@ -20,10 +20,11 @@ class LiveTokenController extends Controller
             $resp = Http::get($nodeTokenServer, [
                 'channel' => $live->channel_name,
                 'uid' => $uid,
+                
                 'role' => $role === 'host' ? 'host' : 'viewer',
             ]);
 
-            return response()->json($resp->json());
+            return response()->json($resp);
         }
 
         // Option B: If you have a PHP token generator, swap here
