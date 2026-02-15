@@ -5,16 +5,15 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\LoginFormRequest;
+use App\Http\Requests\RegisterFormRequest;
 use Laravel\Sanctum\PersonalAccessToken;
 class AuthController extends Controller
 {
-    public function register(Request $request){
-        $fields = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|max:255|unique:users',
-            'phone' => 'required|string|max:20|unique:users',
-            'password' => 'required|string|min:6',
-        ]);
+    public function register(RegisterFormRequest $request){
+        
+        $fields = $request->validated();
+        
         $emailExists = User::where('email', $fields['email'])->exists();
         $phoneExists = User::where('phone', $fields['phone'])->exists();
         if($emailExists || $phoneExists){
@@ -34,26 +33,22 @@ class AuthController extends Controller
         ];
     }
 
-    public function login(Request $request){
-        $request->validate([
-            'email' => 'required|email',
-            'password' => 'required|min:6|string',
-        ]);
+    public function login(LoginFormRequest $request){
+        $request->validated();
+        $userExists = User::where('email', $request->email)->first();
 
-        $user = User::where('email', $request->email)->first();
-
-        if(!$user || !Hash::check($request->password, $user->password)){
+        if(!$userExists || !Hash::check($request->password, $userExists->password)){
             return ['message' => 'The provided credentials are incorrect.'];
         }
     
-        $token = $user->createToken($user->name);
+        $token = $userExists->createToken($userExists->name);
         
         //session(['user_id' => $user->id]); 
 
         $tokenFromRequest = PersonalAccessToken::findToken($token->plainTextToken);
         //$tokenFromRequest->user;
         return [
-            'user' => $user, 
+            'user' => $userExists, 
             'token' => $token->plainTextToken,
             'tokenFromRequest' => $tokenFromRequest,
             
