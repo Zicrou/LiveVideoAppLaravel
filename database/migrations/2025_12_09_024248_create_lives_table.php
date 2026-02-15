@@ -9,7 +9,7 @@ class CreateLivesTable extends Migration
     public function up()
     {
         Schema::create('lives', function (Blueprint $table) {
-            $table->id();
+            $table->uuid('id')->primary();
             $table->string('channel_name')->unique();
             $table->unsignedBigInteger('host_user_id')->nullable();
             $table->string('title')->nullable();

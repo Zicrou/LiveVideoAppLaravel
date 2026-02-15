@@ -11,9 +11,18 @@ class AuthController extends Controller
     public function register(Request $request){
         $fields = $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|string|max:255|unique:users',
-            'password' => 'required',
+            'email' => 'required|email|max:255|unique:users',
+            'phone' => 'required|string|max:20|unique:users',
+            'password' => 'required|string|min:6',
         ]);
+        $emailExists = User::where('email', $fields['email'])->exists();
+        $phoneExists = User::where('phone', $fields['phone'])->exists();
+        if($emailExists || $phoneExists){
+            return response()->json([
+                'message' => 'Email or phone already exists'
+            ], 422);
+        }
+
         $fields['password'] =  Hash::make($fields['password']);
 
         $user = User::create($fields);
@@ -27,8 +36,8 @@ class AuthController extends Controller
 
     public function login(Request $request){
         $request->validate([
-            'email' => 'required|string',
-            'password' => 'required',
+            'email' => 'required|email',
+            'password' => 'required|min:6|string',
         ]);
 
         $user = User::where('email', $request->email)->first();

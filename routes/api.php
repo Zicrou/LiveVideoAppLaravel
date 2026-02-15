@@ -22,6 +22,9 @@ Route::prefix('V1')->group(function () {
         Route::get('/livesToken/{live}/token', [LiveController::class, 'token']);
         Route::get('/livesTokenController/{live}/token', [LiveTokenController::class, 'token']);
         Route::get('/agora/token', [AgoraTokenController::class, 'token']);
+
+        // Route for Videos
+        // Route::get('/videos', [\App\Http\Controllers\V1\VideoController::class, 'index']);
     });
     Route::post('/register', [\App\Http\Controllers\V1\AuthController::class, 'register']);
     Route::post('/login', [\App\Http\Controllers\V1\AuthController::class, 'login']);

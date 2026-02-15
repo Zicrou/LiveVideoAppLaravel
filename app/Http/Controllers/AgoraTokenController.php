@@ -10,13 +10,15 @@ use Nette\Utils\Json;
 // use BoogieFromZk\AgoraToken\RtcTokenBuilder2;
 // use Yasser\Agora\RtcTokenBuilder;
 
+use function Illuminate\Support\env;
+
 class AgoraTokenController extends Controller
 {
     
 public function token(Request $request)
 {
-        $appID = env('AGORA_APP_ID');
-    $appCertificate = env('AGORA_APP_CERTIFICATE');
+    $appID = \env('AGORA_APP_ID');
+    $appCertificate = \env('AGORA_APP_CERTIFICATE');
 
     $channelName = $request->channelName ?? "test_channel";
     $user = 0;
