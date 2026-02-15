@@ -61,7 +61,7 @@ class AuthController extends Controller
         //session()->flush(); // removes all session data
         return ['message' => 'you are logged out',
             'loggedOut' => true,
-            
+            // "userTokens" => $request->user(),
         ];
         // $tokenString = $request->bearerToken(); // Just the token string, no "Bearer"
         // $tokenFromRequest = PersonalAccessToken::findToken($tokenString);
