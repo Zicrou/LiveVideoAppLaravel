@@ -18,6 +18,11 @@ class Post extends Model
         return $this->belongsTo(User::class, 'owner_id');
     }
 
+    public function video()
+    {
+        return $this->hasOne(Video::class, 'post_id');
+    }
+
     protected $casts = [
         'post_type' => 'string',
         'owner_id' => 'string',

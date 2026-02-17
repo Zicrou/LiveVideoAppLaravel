@@ -4,10 +4,8 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
-use App\Models\Post;
-use App\Http\Resources\UserResource;
 
-class PostResource extends JsonResource
+class VideoResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -18,10 +16,10 @@ class PostResource extends JsonResource
     {
         return [
             'id' => $this->resource->id,
-            'post_type' => $this->resource->post_type,
-            // 'owner' => $this->resource->owner,
-            'user' => new UserResource($this->whenLoaded('owner')),
-            'video' => new VideoResource($this->whenLoaded('video')),
+            'video_url' => $this->resource->video_url,
+            'caption' => $this->resource->caption,
+            'owner_id' => $this->resource->owner_id,
+            'post_id' => $this->resource->post_id,
         ];
     }
 }

@@ -45,6 +45,11 @@ class User extends Authenticatable
         return $this->hasMany(Post::class, 'owner_id');
     }
 
+    public function videos()
+    {
+        return $this->hasMany(Video::class, 'owner_id');
+    }
+
     /**
      * Get the attributes that should be cast.
      *
