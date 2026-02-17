@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\V1;
+namespace App\Http\Controllers\Api\V1;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -34,11 +34,11 @@ class AuthController extends Controller
     }
 
     public function login(LoginFormRequest $request){
-        $request->validated();
+        $fields = $request->validated();
         $userExists = User::where('email', $request->email)->first();
 
         if(!$userExists || !Hash::check($request->password, $userExists->password)){
-            return ['message' => 'The provided credentials are incorrect.'];
+            return ['message' => 'The provided credentials are incorrect.', "data" => $fields];
         }
     
         $token = $userExists->createToken($userExists->name);
@@ -56,13 +56,16 @@ class AuthController extends Controller
     }
 
     public function logout(Request $request){
-        //return "Ok";
         $request->user()->tokens()->delete();
-        //session()->flush(); // removes all session data
         return ['message' => 'you are logged out',
-            'loggedOut' => true,
-            // "userTokens" => $request->user(),
+        'loggedOut' => true,
+        "token" => $request->bearerToken(),
+        "tokens" => $request->user()->tokens()->get()
         ];
+
+        //return "Ok";
+        // "userTokens" => $request->user(),
+        //session()->flush(); // removes all session data
         // $tokenString = $request->bearerToken(); // Just the token string, no "Bearer"
         // $tokenFromRequest = PersonalAccessToken::findToken($tokenString);
     }
