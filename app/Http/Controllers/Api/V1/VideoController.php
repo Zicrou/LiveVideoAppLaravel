@@ -4,16 +4,20 @@ namespace App\Http\Controllers\Api\V1;
 
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\LikeResource;
 use App\Http\Resources\PostResource;
+use App\Http\Resources\VideoResource;
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\Post;
 use App\Models\Video;
+use App\Models\Like;
+
 use Laravel\Sanctum\PersonalAccessToken;
 use Illuminate\Routing\Controllers\Middleware;
 use Illuminate\Routing\Controllers\HasMiddleware;
 
-class PostController extends Controller implements HasMiddleware
+class VideoController extends Controller implements HasMiddleware
 {
     public static function middleware()
     {
@@ -22,8 +26,18 @@ class PostController extends Controller implements HasMiddleware
         ];
     }
     public function index(Request $request){
-        $userOwner = $request->user();
-        return PostResource::collection(Post::with(['video'])->get());
+        
+        return[
+            "videos" => Video::query()
+            ->with('likes')
+            ->withCount('likes')
+            ->with('saveds')
+            ->withCount('saveds')
+            ->with('comments')
+            ->withCount('comments')
+            ->get(),
+        ];
+        // return VideoResource::collection(Video::withCount('likes')->with('likes')->get());
     }
 
     public function store(Request $request){

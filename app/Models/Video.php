@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Concerns\HasUuid;
+use App\Models\Comment;
 use Illuminate\Database\Eloquent\Model;
 
 class Video extends Model
@@ -25,7 +26,20 @@ class Video extends Model
         return $this->belongsTo(Post::class, 'post_id');
     }
 
+    public function likes()
+    {
+        return $this->hasMany(Like::class, 'video_id');
+    }
 
+    public function saveds()
+    {
+        return $this->hasMany(Save::class, 'video_id');
+    }
+
+    public function comments()
+    {
+        return $this->hasMany(Comment::class, 'video_id');
+    }
 
     protected $casts = [
         'caption' => 'string',

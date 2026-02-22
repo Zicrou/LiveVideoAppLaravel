@@ -11,12 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('videos', function (Blueprint $table) {
+        Schema::create('saves', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->string('caption')->nullable();
-            $table->string('video_url');
-            $table->foreignUuid('owner_id')->references('id')->on('users') ->onDelete('cascade');
-            $table->foreignUuid('post_id')->references('id')->on('posts') ->onDelete('cascade');
+            $table->uuid('owner_id')->nullable();
+            $table->foreignUuid('user_id')->references('id')->on('users')->onDelete('cascade');
+            $table->foreignUuid(column: 'video_id')->references('id')->on('videos')->onDelete('cascade');
             $table->timestamps();
         });
     }
@@ -26,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('videos');
+        Schema::dropIfExists('saves');
     }
 };

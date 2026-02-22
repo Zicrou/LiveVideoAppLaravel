@@ -11,7 +11,8 @@ Route::prefix('v1')->group(function () {
     });
 });
 // $idRegex   = '[0-9]+';
-// $slugRegex = '[0-9a-z\-]+';
+$id = '[0-9a-z\-]+';
+$video_id = '[0-9a-z\-]+';
 Route::prefix('V1')->group(function () {
 
     Route::middleware('auth:sanctum')->group(function () {
@@ -27,15 +28,26 @@ Route::prefix('V1')->group(function () {
         Route::get('/livesToken/{live}/token', [LiveController::class, 'token']);
         Route::get('/livesTokenController/{live}/token', [LiveTokenController::class, 'token']);
         Route::get('/agora/token', [AgoraTokenController::class, 'token']);
-
-        // Route for Videos
-        // Route::get('/videos', [\App\Http\Controllers\V1\VideoController::class, 'index']);
-
+        
         // Routes for Posts
         Route::get('/posts', [\App\Http\Controllers\Api\V1\PostController::class, 'index']);
         Route::post('/posts', [\App\Http\Controllers\Api\V1\PostController::class, 'store']);
         Route::put('/posts/{post}', [\App\Http\Controllers\Api\V1\PostController::class, 'update']);
         Route::delete('/posts/{post}', [\App\Http\Controllers\Api\V1\PostController::class, 'destroy']);
+
+        // Routes for Videos
+        Route::get('/videos', [\App\Http\Controllers\Api\V1\VideoController::class, 'index']);
+        // Routes for Likes
+        Route::get('/likes', [\App\Http\Controllers\Api\V1\LikeController::class, 'index']);
+        Route::post('/likes', [\App\Http\Controllers\Api\V1\LikeController::class, 'store']);
+        Route::delete('/likes/{id}', [\App\Http\Controllers\Api\V1\LikeController::class, 'destroy']);
+        Route::post('/likes/toggleLikeDislike', [\App\Http\Controllers\Api\V1\LikeController::class, 'toggleLikeDislike']);
+        
+        // Routes for Comments
+        Route::get('comments', [\App\Http\Controllers\Api\V1\CommentController::class, 'index']);
+        Route::post('comments', [\App\Http\Controllers\Api\V1\CommentController::class, 'store']);
+        Route::put('comments/{id}', [\App\Http\Controllers\Api\V1\CommentController::class, 'update']);
+        Route::delete('comments/{id}', [\App\Http\Controllers\Api\V1\CommentController::class, 'destroy']);
     });
     Route::post('/register', [\App\Http\Controllers\Api\V1\AuthController::class, 'register']);
     Route::post('/login', [\App\Http\Controllers\Api\V1\AuthController::class, 'login']);

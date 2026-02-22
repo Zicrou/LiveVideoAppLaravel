@@ -17,11 +17,12 @@ class PostResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'id' => $this->resource->id,
+            'post_id' => $this->resource->id,
             'post_type' => $this->resource->post_type,
-            // 'owner' => $this->resource->owner,
+            'owner' => $this->resource->owner,
             'user' => new UserResource($this->whenLoaded('owner')),
             'video' => new VideoResource($this->whenLoaded('video')),
+            'like' => new LikeResource($this->whenLoaded('like')),
         ];
     }
 }
