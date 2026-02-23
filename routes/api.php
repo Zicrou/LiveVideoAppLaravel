@@ -47,6 +47,12 @@ Route::prefix('V1')->group(function () {
         Route::delete('/likes/{id}', [\App\Http\Controllers\Api\V1\LikeController::class, 'destroy']);
         Route::post('/likes/toggleLikeDislike', [\App\Http\Controllers\Api\V1\LikeController::class, 'toggleLikeDislike']);
         
+        // Routes for Saves
+        Route::get('/save', [\App\Http\Controllers\Api\V1\SaveController::class, 'index']);
+        Route::post('/save', [\App\Http\Controllers\Api\V1\SaveController::class, 'store']);
+        Route::delete('/save/{id}', [\App\Http\Controllers\Api\V1\SaveController::class, 'destroy']);
+        Route::post('/save/toggleSaveUnSaved', [\App\Http\Controllers\Api\V1\SaveController::class, 'toggleSaveUnSave']);
+        
         // Routes for Comments
         Route::get('comments', [\App\Http\Controllers\Api\V1\CommentController::class, 'index']);
         Route::post('comments', [\App\Http\Controllers\Api\V1\CommentController::class, 'store']);
