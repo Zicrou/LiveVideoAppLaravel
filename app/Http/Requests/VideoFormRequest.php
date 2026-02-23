@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class LikeFormRequest extends FormRequest
+class VideoFormRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -22,8 +22,11 @@ class LikeFormRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'video_id' => ['required','uuid','exists:videos,id'],
-            'like_id' => ['uuid','nullable'],
+            'post_type' => ['required','in:text,image,video'],
+            'video_url' => ['string','nullable'],
+            'image_url' => ['string','nullable'],
+            'text' => ['string','nullable'],
+            'caption' => ['string','nullable'],
         ];
     }
 }

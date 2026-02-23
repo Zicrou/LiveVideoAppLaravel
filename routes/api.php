@@ -37,6 +37,10 @@ Route::prefix('V1')->group(function () {
 
         // Routes for Videos
         Route::get('/videos', [\App\Http\Controllers\Api\V1\VideoController::class, 'index']);
+        Route::post('/videos', [\App\Http\Controllers\Api\V1\VideoController::class, 'store']);
+        Route::put('/videos/{id}', [\App\Http\Controllers\Api\V1\VideoController::class, 'update']);
+        Route::delete('/videos/{id}', [\App\Http\Controllers\Api\V1\VideoController::class, 'destroy']);
+        
         // Routes for Likes
         Route::get('/likes', [\App\Http\Controllers\Api\V1\LikeController::class, 'index']);
         Route::post('/likes', [\App\Http\Controllers\Api\V1\LikeController::class, 'store']);

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\LikeFormRequest;
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\Video;
@@ -19,22 +20,23 @@ class LikeController extends Controller implements HasMiddleware
         ];
     }
     public function index(Request $request){
+        $user = $request->user();  
+        if(!$user){
+            return ['message' => "User not found"];
+        }  
         return[
             'likes' => Like::all()
         ];
     }
 
-    public function toggleLikeDislike(Request $request){
+    public function toggleLikeDislike(LikeFormRequest $request){
         $user = $request->user();
         if(!$user){
             return response()->json([
                 'message' => 'User not found'
             ], 404);
         }
-        $data = $request->validate([
-            'video_id' => 'required|uuid|exists:videos,id',
-            'like_id' => 'uuid|nullable'
-        ]);
+        $data = $request->validated();
 
         if($data['like_id'] == null){
             $this->store($user, $data['video_id']);

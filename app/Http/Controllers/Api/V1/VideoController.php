@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1;
 
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\VideoFormRequest;
 use App\Http\Resources\LikeResource;
 use App\Http\Resources\PostResource;
 use App\Http\Resources\VideoResource;
@@ -26,7 +27,10 @@ class VideoController extends Controller implements HasMiddleware
         ];
     }
     public function index(Request $request){
-        
+        $user = $request->user();
+        if(!$user){
+            return ['message' => "User not found"];
+        }
         return[
             "videos" => Video::query()
             ->with('likes')
@@ -40,7 +44,7 @@ class VideoController extends Controller implements HasMiddleware
         // return VideoResource::collection(Video::withCount('likes')->with('likes')->get());
     }
 
-    public function store(Request $request){
+    public function store(VideoFormRequest $request){
         $userExists = User::find($request->user()->id);
         if(!$userExists){
             return response()->json([
@@ -48,12 +52,8 @@ class VideoController extends Controller implements HasMiddleware
             ], 404);
         }
 
-        $data = $request->validate([
-            'post_type' => 'required|in:text,image,video',
-            'video_url' => 'required|string',
-            'caption' => 'string|nullable',
-        ]);
-        
+        $data = $request->validated();
+            
         $post = Post::create([
             'post_type' => $request->post_type,
             'owner_id' => $request->user()->id,
@@ -77,20 +77,16 @@ class VideoController extends Controller implements HasMiddleware
         return new PostResource($post);
     }
 
-    public function update(Request $request, Post $post){
+    public function update(VideoFormRequest $request, $postId){
         $userOwner = $request->user();
+        $post = Post::find($postId);
         if($post->owner_id !== $userOwner->id){
             return response()->json([
                 'message' => 'Unauthorized'
-            ], 403);
-        }
-        $request->validate([
-            'post_type' => 'required|in:text,image,video',
-            'video_url' => 'string|nullable',
-            'image_url' => 'string|nullable',
-            'text' => 'string|nullable',
-            'caption' => 'string|nullable',
-        ]);
+                ], 403);
+                }
+        // return['post' => $postId];  
+        $request->validated();
         $post->update([
             'post_type' => $request->post_type,
         ]);
@@ -118,26 +114,35 @@ class VideoController extends Controller implements HasMiddleware
     }
 
 
-    public function destroy(Request $request, Post $post){
+    public function destroy(Request $request, $postId){
         $userOwner = $request->user();
+        $post = Post::find($postId);
+        // return['user' => $userOwner, "post" => $post,
+        // "request" => $postId];
         if($post->owner_id !== $userOwner->id){
             return response()->json([
                 'message' => 'Unauthorized'
             ], 403);
         }
-        $deleteVideoOnly = $request->validate(['delete_video' => 'boolean']);
-        if($deleteVideoOnly){
-            $video = $post->video;
-            if($video){
-                $video->delete();
-            }
-            return response()->json([
-                'message' => 'Video deleted successfully',
-                'video' => $video,
-            ], 200);
-        }
-        // Delete the whole post and its related video
+
         Post::destroy($post->id);
+        return response()->json([
+            'message' => 'Post deleted successfully',
+        ], 200);
+
+        // $post->delete();
+        // $deleteVideoOnly = $request->validate(['delete_video' => 'boolean']);
+        // if($deleteVideoOnly){
+        //     $video = $post->video;
+        //     if($video){
+        //         $video->delete();
+        //     }
+        //     return response()->json([
+        //         'message' => 'Video deleted successfully',
+        //         'video' => $video,
+        //     ], 200);
+        // }
+        // Delete the whole post and its related video
 
         // If you want to delete the video separately, you can do it like this:
         // $video = $post->video;
@@ -152,9 +157,6 @@ class VideoController extends Controller implements HasMiddleware
         // }
 
 
-        return response()->json([
-            'message' => 'Post deleted successfully',
-            'post' => $post->id,
-        ], 200);
+        
     }
 }
