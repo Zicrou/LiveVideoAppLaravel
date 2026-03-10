@@ -37,14 +37,14 @@ class LikeController extends Controller implements HasMiddleware
             ], 404);
         }
         $data = $request->validated();
-
-        if($data['like_id'] == null){
+        $like = Like::where('user_id', $user->id)->where('video_id', $data['video_id'])->first();
+        // return ["like" => $like];
+        if(!$like){
             $this->store($user, $data['video_id']);
             return['message' => 'Video liked successfully',
-            // 'like' => $like
             ];
         }else{
-            $this->destroy($data['like_id'], $user);
+            $like->delete();
             return['message' => 'Video unliked successfully',];
         }
     }

@@ -16,6 +16,7 @@ return new class extends Migration
         $table->uuid('owner_id')->nullable();
         $table->foreignUuid('user_id')->references('id')->on('users')->onDelete('cascade');
         $table->foreignUuid(column: 'video_id')->references('id')->on('videos')->onDelete('cascade');
+        $table->unique(columns: ['user_id','video_id']);
         $table->timestamps();
         });
     }

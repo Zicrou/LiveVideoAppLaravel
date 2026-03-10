@@ -13,7 +13,8 @@ class Comment extends Model
         'owner_id',
         'user_id',
         'video_id',
-        'comment'
+        'comment',
+        'parent_id'
     ];
 
     public function owner()
@@ -29,5 +30,14 @@ class Comment extends Model
     public function video()
     {
         return $this->belongsTo(Video::class, 'video_id');
+    }
+    public function replies()
+    {
+        return $this->hasMany(Comment::class,'parent_id');
+    }
+
+    public function likes()
+    {
+        return $this->hasMany(CommentLike::class);
     }
 }

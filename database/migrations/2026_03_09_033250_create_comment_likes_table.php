@@ -11,15 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('comments', function (Blueprint $table) {
+        Schema::create('comment_likes', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->text('comment')->nullable();
             $table->foreignUuid('user_id')->references('id')->on('users')->onDelete('cascade');
-            $table->foreignUuid(column: 'video_id')->references('id')->on('videos')->onDelete('cascade');
-            // reply system
-            $table->uuid('parent_id')->nullable();
+            $table->foreignUuid(column: 'comment_id')->references('id')->on('comments')->onDelete('cascade');
+
             $table->timestamps();
-            
+
+            $table->unique(['user_id','comment_id']);
         });
     }
 
@@ -28,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('comments');
+        Schema::dropIfExists('comment_likes');
     }
 };

@@ -54,10 +54,14 @@ Route::prefix('V1')->group(function () {
         Route::post('/save/toggleSaveUnSaved', [\App\Http\Controllers\Api\V1\SaveController::class, 'toggleSaveUnSave']);
         
         // Routes for Comments
-        Route::get('comments', [\App\Http\Controllers\Api\V1\CommentController::class, 'index']);
+        Route::get('videos/comments/{video_id}', [\App\Http\Controllers\Api\V1\CommentController::class, 'index']);
         Route::post('comments', [\App\Http\Controllers\Api\V1\CommentController::class, 'store']);
         Route::put('comments/{id}', [\App\Http\Controllers\Api\V1\CommentController::class, 'update']);
         Route::delete('comments/{id}', [\App\Http\Controllers\Api\V1\CommentController::class, 'destroy']);
+       
+        // Route::get('/videos/{video_id}/comments', [\App\Http\Controllers\Api\V1\CommentController::class,'getComments']);
+
+        // Route::post('/comments', [\App\Http\Controllers\Api\V1\CommentController::class,'store']);
     });
     Route::post('/register', [\App\Http\Controllers\Api\V1\AuthController::class, 'register']);
     Route::post('/login', [\App\Http\Controllers\Api\V1\AuthController::class, 'login']);

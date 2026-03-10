@@ -28,18 +28,28 @@ class VideoController extends Controller implements HasMiddleware
     }
     public function index(Request $request){
         $user = $request->user();
+        $user_id = $user->id;
         if(!$user){
             return ['message' => "User not found"];
         }
-        return[
-            "videos" => Video::query()
-            ->with('likes')
+        $videos = Video::query()
             ->withCount('likes')
-            ->with('saveds')
+            ->withCount([
+                'likes as isLiked' => function ($query) use ($user_id) {
+                    $query->where('user_id', $user_id);
+                }
+            ])
             ->withCount('saveds')
-            ->with('comments')
+            ->withCount([
+                'saveds as isSaveds' => function ($query) use ($user_id) {
+                    $query->where('user_id', $user_id);
+                }
+            ])->latest()
             ->withCount('comments')
-            ->get(),
+            ->get();
+        // $videos = Video::query()->with('liked',$user->id)->latest();
+        return[
+            "videos" => $videos
         ];
         // return VideoResource::collection(Video::withCount('likes')->with('likes')->get());
     }

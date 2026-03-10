@@ -11,6 +11,8 @@ use App\Models\Comment;
 use Laravel\Sanctum\PersonalAccessToken;
 use Illuminate\Routing\Controllers\Middleware;
 use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Support\Facades\Validator;
+
 class CommentController extends Controller implements HasMiddleware
 {
      public static function middleware()
@@ -27,11 +29,25 @@ class CommentController extends Controller implements HasMiddleware
                 'message' => 'User not found'
             ], 404);
         }
-        $data = $request->validate([
-            'video_id' => ['required', 'uuid','exists:videos,id'],
-            // 'comment' => 'required|string'
-        ]);
-        $comments = Comment::where('video_id',$data['video_id'])->get();
+
+        $validator = Validator::make(
+        ['video_id' => $request->video_id],
+        [
+            'video_id' => 'required|uuid|exists:videos,id'
+        ]
+    );
+
+    if ($validator->fails()) {
+        return response()->json([
+            'message' => 'Invalid video id',
+            'errors' => $validator->errors()
+        ], 422);
+    }
+        $comments = Comment::with(['user', 'replies.user'])
+        ->where('video_id', $request->video_id)
+        ->whereNull('parent_id')
+        ->latest()
+        ->get();
         return[
             'comments' => $comments,
             'commentsCount' => $comments->count(),
@@ -56,13 +72,12 @@ class CommentController extends Controller implements HasMiddleware
             // 'owner_id' => $user->id,
             'user_id' => $user->id,
             'video_id' => $video->id,
-            'comment' => $data['comment']
+            'comment' => $data['comment'],
+            'parent_id' => $request->parent_id
         ]);
 
         return[
             'message' => 'Video liked successfully',
-            'token' => $request->bearerToken(),
-            'user' => $user,
             'comment' => $comment,
             'commentCount' => $video->comments_count
         ];
