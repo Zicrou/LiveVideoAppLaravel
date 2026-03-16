@@ -50,6 +50,11 @@ class User extends Authenticatable
         return $this->hasMany(Video::class, 'owner_id');
     }
 
+    public function commenLike()
+    {
+        return $this->hasMany(CommentLike::class);
+    }
+
     /**
      * Get the attributes that should be cast.
      *

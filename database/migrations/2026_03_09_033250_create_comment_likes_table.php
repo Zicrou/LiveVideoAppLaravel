@@ -15,7 +15,6 @@ return new class extends Migration
             $table->uuid('id')->primary();
             $table->foreignUuid('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->foreignUuid(column: 'comment_id')->references('id')->on('comments')->onDelete('cascade');
-
             $table->timestamps();
 
             $table->unique(['user_id','comment_id']);

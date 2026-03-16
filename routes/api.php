@@ -58,7 +58,8 @@ Route::prefix('V1')->group(function () {
         Route::post('comments', [\App\Http\Controllers\Api\V1\CommentController::class, 'store']);
         Route::put('comments/{id}', [\App\Http\Controllers\Api\V1\CommentController::class, 'update']);
         Route::delete('comments/{id}', [\App\Http\Controllers\Api\V1\CommentController::class, 'destroy']);
-       
+        Route::post('likeUnlike/comments', [\App\Http\Controllers\Api\V1\CommentController::class, 'likeDislike']);
+        
         // Route::get('/videos/{video_id}/comments', [\App\Http\Controllers\Api\V1\CommentController::class,'getComments']);
 
         // Route::post('/comments', [\App\Http\Controllers\Api\V1\CommentController::class,'store']);

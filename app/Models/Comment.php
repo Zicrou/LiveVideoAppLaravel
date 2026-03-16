@@ -40,4 +40,5 @@ class Comment extends Model
     {
         return $this->hasMany(CommentLike::class);
     }
+    
 }

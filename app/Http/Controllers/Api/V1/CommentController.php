@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Models\Video;
 use App\Models\Like;
 use App\Models\Comment;
+use App\Models\CommentLike;
 use Laravel\Sanctum\PersonalAccessToken;
 use Illuminate\Routing\Controllers\Middleware;
 use Illuminate\Routing\Controllers\HasMiddleware;
@@ -43,7 +44,13 @@ class CommentController extends Controller implements HasMiddleware
             'errors' => $validator->errors()
         ], 422);
     }
-        $comments = Comment::with(['user', 'replies.user'])
+        $comments = Comment::with(['user', 'replies.user', 'likes'])
+        ->withCount('likes')
+        // ->withCount([
+        //         'likes as isLiked' => function ($query) use ($user_id) {
+        //             $query->where('user_id', $user_id);
+        //         }
+        //     ])
         ->where('video_id', $request->video_id)
         ->whereNull('parent_id')
         ->latest()
@@ -52,6 +59,7 @@ class CommentController extends Controller implements HasMiddleware
             'comments' => $comments,
             'commentsCount' => $comments->count(),
         ];
+
     }
 
     public function store(Request $request){
@@ -134,6 +142,42 @@ class CommentController extends Controller implements HasMiddleware
         $comment->delete();
         return[
             'comment' => $comment
+        ];
+    }
+
+    public function likeDislike(Request $request){
+
+        $user = $request->user();
+        if(!$user){
+            return response()->json([
+                'message' => 'User not found'
+            ], 404);
+        }
+        $data = $request->validate([
+            'comment_id' => ['required', 'exists:comments,id', 'uuid']
+        ]);
+        $likeComment = CommentLike::where('user_id', $user->id)->where('comment_id', $data['comment_id'])->first();
+        // return ["like" => $like];
+        if(!$likeComment){
+            $this->storeCommentLike($user, $data['comment_id']);
+            return['message' => 'Comment liked successfully',
+            ];
+        }else{
+            $likeComment->delete();
+            return['message' => 'Comment unliked successfully',];
+        }
+    }
+
+    public function storeCommentLike($user, $commentId){
+       
+        $commentLike = CommentLike::create([
+            // 'owner_id' => $user->id,
+            'user_id' => $user->id,
+            'comment_id' => $commentId,
+            ]);
+                    
+        return[
+            'commentLike' => $commentLike,
         ];
     }
 }
