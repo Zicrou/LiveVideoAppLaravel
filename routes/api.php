@@ -40,7 +40,7 @@ Route::prefix('V1')->group(function () {
         Route::post('/videos', [\App\Http\Controllers\Api\V1\VideoController::class, 'store']);
         Route::put('/videos/{id}', [\App\Http\Controllers\Api\V1\VideoController::class, 'update']);
         Route::delete('/videos/{id}', [\App\Http\Controllers\Api\V1\VideoController::class, 'destroy']);
-        
+        Route::post('/videos/{id}/share', [\App\Http\Controllers\Api\V1\VideoController::class, 'shareVideos']);
         // Routes for Likes
         Route::get('/likes', [\App\Http\Controllers\Api\V1\LikeController::class, 'index']);
         Route::post('/likes', [\App\Http\Controllers\Api\V1\LikeController::class, 'store']);
@@ -59,6 +59,7 @@ Route::prefix('V1')->group(function () {
         Route::put('comments/{id}', [\App\Http\Controllers\Api\V1\CommentController::class, 'update']);
         Route::delete('comments/{id}', [\App\Http\Controllers\Api\V1\CommentController::class, 'destroy']);
         Route::post('likeUnlike/comments', [\App\Http\Controllers\Api\V1\CommentController::class, 'likeDislike']);
+        Route::post('reply/comments', [\App\Http\Controllers\Api\V1\CommentController::class, 'addCommentReply']);
         
         // Route::get('/videos/{video_id}/comments', [\App\Http\Controllers\Api\V1\CommentController::class,'getComments']);
 

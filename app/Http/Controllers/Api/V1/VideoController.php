@@ -165,8 +165,14 @@ class VideoController extends Controller implements HasMiddleware
         // foreach ($images as $image) {
         //     $image->delete();
         // }
+    }
 
-
-        
+    public function shareVideos(Request $request, $id){
+        $video = Video::findOrFail($id);
+        $video->increment('shares_count');
+        return response()->json([
+            'message' => 'Shared',
+            'shares' => $video->shares_count
+        ]);
     }
 }

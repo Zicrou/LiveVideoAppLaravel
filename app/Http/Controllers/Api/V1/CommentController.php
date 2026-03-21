@@ -25,6 +25,7 @@ class CommentController extends Controller implements HasMiddleware
 
     public function index(Request $request){
         $user = $request->user();
+        // return ['user' => $user];
         if(!$user){
             return response()->json([
                 'message' => 'User not found'
@@ -44,13 +45,13 @@ class CommentController extends Controller implements HasMiddleware
             'errors' => $validator->errors()
         ], 422);
     }
-        $comments = Comment::with(['user', 'replies.user', 'likes'])
+        $comments = Comment::with(['user', 'replies.user'])
         ->withCount('likes')
-        // ->withCount([
-        //         'likes as isLiked' => function ($query) use ($user_id) {
-        //             $query->where('user_id', $user_id);
-        //         }
-        //     ])
+        ->withCount([
+                'likes as isLiked' => function ($query) use ($user) {
+                    $query->where('user_id', $user->id);
+                }
+            ])
         ->where('video_id', $request->video_id)
         ->whereNull('parent_id')
         ->latest()
@@ -178,6 +179,35 @@ class CommentController extends Controller implements HasMiddleware
                     
         return[
             'commentLike' => $commentLike,
+        ];
+    }
+
+    public function addCommentReply(Request $request){
+        $user = $request->user();
+        if(!$user){
+            return response()->json([
+                'message' => 'User not found'
+            ], 404);
+        }
+        $data = $request->validate([
+            'video_id' => ['required', 'uuid','exists:videos,id'],
+            'comment' => 'required|string',
+            'parent_id' => ['required', 'uuid', 'exists:comments,id']
+        ]);
+        $video = Video::where('id',$data['video_id'])->with('comments')->withCount('comments')->first();
+        // return['video' => $video->id];
+        $reply = Comment::create([
+            // 'owner_id' => $user->id,
+            'user_id' => $user->id,
+            'video_id' => $data['video_id'],
+            'comment' => $data['comment'],
+            'parent_id' => $data['parent_id']
+        ]);
+
+        return[
+            'message' => 'Replied successfully',
+            'comment' => $reply,
+            'commentCount' => $video->comments_count
         ];
     }
 }
