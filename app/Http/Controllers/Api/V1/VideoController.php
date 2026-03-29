@@ -32,8 +32,27 @@ class VideoController extends Controller implements HasMiddleware
         if(!$user){
             return ['message' => "User not found"];
         }
+        // $q_caption = $request->q;
+        // if($q_caption){
+        //     $videos = Video::query()->where('caption', 'LIKE', "%$q_caption%")
+        //     ->withCount('likes')
+        //     ->withCount([
+        //         'likes as isLiked' => function ($query) use ($user_id) {
+        //             $query->where('user_id', $user_id);
+        //         }
+        //     ])
+        //     ->withCount('saveds')
+        //     ->withCount([
+        //         'saveds as isSaveds' => function ($query) use ($user_id) {
+        //             $query->where('user_id', $user_id);
+        //         }
+        //     ])->latest()
+        //     ->withCount('comments')
+        //     ->get();
+        // }
         $videos = Video::query()
-            ->withCount('likes')
+        ->with("owner")
+        ->withCount('likes')
             ->withCount([
                 'likes as isLiked' => function ($query) use ($user_id) {
                     $query->where('user_id', $user_id);
@@ -47,7 +66,6 @@ class VideoController extends Controller implements HasMiddleware
             ])->latest()
             ->withCount('comments')
             ->get();
-        // $videos = Video::query()->with('liked',$user->id)->latest();
         return[
             "videos" => $videos
         ];
@@ -175,4 +193,31 @@ class VideoController extends Controller implements HasMiddleware
             'shares' => $video->shares_count
         ]);
     }
+
+    public function search(Request $request)
+{
+    $user = $request->user();
+    $user_id = $user->id;
+    $q = $request->q;
+
+    $videos = Video::where('caption', 'ILIKE', "%$q%")->withCount('likes')
+        ->with("owner")
+        ->withCount([
+            'likes as isLiked' => function ($query) use ($user_id) {
+                $query->where('user_id', $user_id);
+            }
+        ])
+        ->withCount('saveds')
+        ->withCount([
+            'saveds as isSaveds' => function ($query) use ($user_id) {
+                $query->where('user_id', $user_id);
+            }
+        ])->latest()
+        ->withCount('comments')
+        ->get();
+
+    return response()->json([
+        'videos' => $videos
+    ]);
+}
 }

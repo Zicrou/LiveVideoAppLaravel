@@ -13,6 +13,7 @@ Route::prefix('v1')->group(function () {
 // $idRegex   = '[0-9]+';
 $id = '[0-9a-z\-]+';
 $video_id = '[0-9a-z\-]+';
+$q = '[0-9a-z\-]+';
 Route::prefix('V1')->group(function () {
 
     Route::middleware('auth:sanctum')->group(function () {
@@ -41,6 +42,7 @@ Route::prefix('V1')->group(function () {
         Route::put('/videos/{id}', [\App\Http\Controllers\Api\V1\VideoController::class, 'update']);
         Route::delete('/videos/{id}', [\App\Http\Controllers\Api\V1\VideoController::class, 'destroy']);
         Route::post('/videos/{id}/share', [\App\Http\Controllers\Api\V1\VideoController::class, 'shareVideos']);
+        Route::get('videos/search', [\App\Http\Controllers\Api\V1\VideoController::class, 'search']);
         // Routes for Likes
         Route::get('/likes', [\App\Http\Controllers\Api\V1\LikeController::class, 'index']);
         Route::post('/likes', [\App\Http\Controllers\Api\V1\LikeController::class, 'store']);
