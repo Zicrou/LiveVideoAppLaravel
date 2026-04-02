@@ -55,6 +55,26 @@ class User extends Authenticatable
         return $this->hasMany(CommentLike::class);
     }
 
+    public function following()
+    {
+        return $this->belongsToMany(
+            User::class,
+            'follows',
+            'follower_id',
+            'following_id'
+        );
+    }
+
+    public function followers()
+    {
+        return $this->belongsToMany(
+            User::class,
+            'follows',
+            'following_id',
+            'follower_id'
+        );
+    }
+
     /**
      * Get the attributes that should be cast.
      *

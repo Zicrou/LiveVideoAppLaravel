@@ -14,6 +14,7 @@ Route::prefix('v1')->group(function () {
 $id = '[0-9a-z\-]+';
 $video_id = '[0-9a-z\-]+';
 $q = '[0-9a-z\-]+';
+$userId = '[0-9a-z\-]+';
 Route::prefix('V1')->group(function () {
 
     Route::middleware('auth:sanctum')->group(function () {
@@ -62,7 +63,7 @@ Route::prefix('V1')->group(function () {
         Route::delete('comments/{id}', [\App\Http\Controllers\Api\V1\CommentController::class, 'destroy']);
         Route::post('likeUnlike/comments', [\App\Http\Controllers\Api\V1\CommentController::class, 'likeDislike']);
         Route::post('reply/comments', [\App\Http\Controllers\Api\V1\CommentController::class, 'addCommentReply']);
-        
+        Route::post('/follow/{userId}', [\App\Http\Controllers\Api\V1\UserController::class, 'toggleFollow']);
         // Route::get('/videos/{video_id}/comments', [\App\Http\Controllers\Api\V1\CommentController::class,'getComments']);
 
         // Route::post('/comments', [\App\Http\Controllers\Api\V1\CommentController::class,'store']);
