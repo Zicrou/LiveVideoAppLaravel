@@ -52,7 +52,9 @@ class VideoController extends Controller implements HasMiddleware
                     $query->where('user_id', $user_id);
                 }
             ])->latest()
-            ->withCount('comments')
+            ->withCount(['comments' => function ($query) {
+                $query->whereNull('parent_id');
+            }])
             ->get();
             $videos = $vids->transform(function ($video) use ($followingIds) {
                 $video->is_following = in_array($video->owner_id, $followingIds);

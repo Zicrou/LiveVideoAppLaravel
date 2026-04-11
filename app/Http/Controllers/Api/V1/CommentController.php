@@ -168,10 +168,11 @@ class CommentController extends Controller implements HasMiddleware
         if(!$likeComment){
             $this->storeCommentLike($user, $data['comment_id']);
             return['message' => 'Comment liked successfully',
+                    'count' => $likeComment->count()
             ];
         }else{
             $likeComment->delete();
-            return['message' => 'Comment unliked successfully',];
+            return['message' => 'Comment unliked successfully'];
         }
     }
 
@@ -243,5 +244,54 @@ class CommentController extends Controller implements HasMiddleware
             'status' => 'deleted',
             'deletedReplyId' => true
         ];
+    }
+
+    public function getReply(Request $request, $replyId){
+        $user = $request->user();
+        // return ['user' => $user];
+        if(!$user){
+            return response()->json([
+                'message' => 'User not found'
+            ], 404);
+        }
+        $reply = Comment::with(['user'])
+        ->withCount('likes')
+        ->withCount([
+                'likes as isLiked' => function ($query) use ($user) {
+                    $query->where('user_id', $user->id);
+                }
+            ])
+        ->where('parent_id', $replyId)
+        ->latest()
+        ->get();
+        return[
+            'reply' => $reply,
+            'replyCount' => $reply->count(),
+        ];
+
+    }
+
+    public function likeUnlikeReply(Request $request){
+
+        $user = $request->user();
+        if(!$user){
+            return response()->json([
+                'message' => 'User not found'
+            ], 404);
+        }
+        $data = $request->validate([
+            'reply_id' => ['required', 'exists:comments,id', 'uuid']
+        ]);
+        $likeComment = CommentLike::where('user_id', $user->id)->where('comment_id', $data['reply_id'])->first();
+        // return ["likeComment" => $likeComment];
+        if(!$likeComment){
+            $this->storeCommentLike($user, $data['reply_id']);
+            return['message' => 'Reply liked successfully',
+                    'count' => CommentLike::where('comment_id', $data['reply_id'])->count()
+            ];
+        }else{
+            $likeComment->delete();
+            return['message' => 'Reply unliked successfully','count' => CommentLike::where('comment_id', $data['reply_id'])->count()];
+        }
     }
 }

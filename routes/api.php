@@ -70,7 +70,10 @@ Route::prefix('V1')->group(function () {
         Route::get('/profile/{userId}', [\App\Http\Controllers\Api\V1\ProfileController::class, 'getProfile']);
         // Route::get('/videos/{video_id}/comments', [\App\Http\Controllers\Api\V1\CommentController::class,'getComments']);
         Route::delete('/comment/reply/{replyId}', [\App\Http\Controllers\Api\V1\CommentController::class,'deleteReply']);
-        // Route::post('/comments', [\App\Http\Controllers\Api\V1\CommentController::class,'store']);
+        Route::get('comments/replies/{replyId}', [\App\Http\Controllers\Api\V1\CommentController::class, 'getReply']);
+        Route::post('likeUnlike/replies', [\App\Http\Controllers\Api\V1\CommentController::class, 'likeUnlikeReply']);
+
+
     });
     Route::post('/register', [\App\Http\Controllers\Api\V1\AuthController::class, 'register']);
     Route::post('/login', [\App\Http\Controllers\Api\V1\AuthController::class, 'login']);
