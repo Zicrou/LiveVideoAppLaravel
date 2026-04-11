@@ -17,7 +17,7 @@ use App\Models\Like;
 use Laravel\Sanctum\PersonalAccessToken;
 use Illuminate\Routing\Controllers\Middleware;
 use Illuminate\Routing\Controllers\HasMiddleware;
-
+use Illuminate\Support\Facades\DB;
 class VideoController extends Controller implements HasMiddleware
 {
     public static function middleware()
@@ -32,25 +32,13 @@ class VideoController extends Controller implements HasMiddleware
         if(!$user){
             return ['message' => "User not found"];
         }
-        // $q_caption = $request->q;
-        // if($q_caption){
-        //     $videos = Video::query()->where('caption', 'LIKE', "%$q_caption%")
-        //     ->withCount('likes')
-        //     ->withCount([
-        //         'likes as isLiked' => function ($query) use ($user_id) {
-        //             $query->where('user_id', $user_id);
-        //         }
-        //     ])
-        //     ->withCount('saveds')
-        //     ->withCount([
-        //         'saveds as isSaveds' => function ($query) use ($user_id) {
-        //             $query->where('user_id', $user_id);
-        //         }
-        //     ])->latest()
-        //     ->withCount('comments')
-        //     ->get();
-        // }
-        $videos = Video::query()
+
+        $followingIds = DB::table('follows')
+            ->where('follower_id', $user_id)
+            ->pluck('following_id')
+            ->toArray();
+        
+        $vids = Video::query()
         ->with("owner")
         ->withCount('likes')
             ->withCount([
@@ -66,6 +54,10 @@ class VideoController extends Controller implements HasMiddleware
             ])->latest()
             ->withCount('comments')
             ->get();
+            $videos = $vids->transform(function ($video) use ($followingIds) {
+                $video->is_following = in_array($video->owner_id, $followingIds);
+                return $video;
+            });
         return[
             "videos" => $videos
         ];
@@ -106,6 +98,7 @@ class VideoController extends Controller implements HasMiddleware
     }
 
     public function update(VideoFormRequest $request, $postId){
+        
         $userOwner = $request->user();
         $post = Post::find($postId);
         if($post->owner_id !== $userOwner->id){
@@ -136,7 +129,7 @@ class VideoController extends Controller implements HasMiddleware
 
         return response()->json([
             'message' => 'Post updated successfully',
-            'post' => $post,
+            // 'post' => $post,
             'video' => $video,
         ], 200);
     }

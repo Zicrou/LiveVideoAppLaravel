@@ -39,16 +39,17 @@ class SaveController extends Controller implements HasMiddleware
             ], 404);
         }
         $data = $request->validated();
-        $save = Save::where('user_id', $user->id)->where('video_id', $data['video_id'])->first();
-        // return['save' => $save];
-        if(!$save){
+        $savedVideo = Save::where('user_id', $user->id)->where('video_id', $data['video_id'])->first();
+
+        
+        if(!$savedVideo){
             // return [$data['save_id']];
             return $this->store($user, $data['video_id']);
-            
         }
-        $save->delete();
+        $savedVideo->delete();
         return[
             'message' => 'Video unsaved successfully',
+            'status' => 'unsaved',
         ];
     }
 
@@ -63,6 +64,7 @@ class SaveController extends Controller implements HasMiddleware
         return[
             'message' => 'Video saved successfully',
             'save' => $save,
+            'savedCount' => $save->count()
         ];
     }
 

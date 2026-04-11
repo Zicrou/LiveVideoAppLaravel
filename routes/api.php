@@ -15,6 +15,7 @@ $id = '[0-9a-z\-]+';
 $video_id = '[0-9a-z\-]+';
 $q = '[0-9a-z\-]+';
 $userId = '[0-9a-z\-]+';
+$replyId = $id;
 Route::prefix('V1')->group(function () {
 
     Route::middleware('auth:sanctum')->group(function () {
@@ -63,9 +64,12 @@ Route::prefix('V1')->group(function () {
         Route::delete('comments/{id}', [\App\Http\Controllers\Api\V1\CommentController::class, 'destroy']);
         Route::post('likeUnlike/comments', [\App\Http\Controllers\Api\V1\CommentController::class, 'likeDislike']);
         Route::post('reply/comments', [\App\Http\Controllers\Api\V1\CommentController::class, 'addCommentReply']);
-        Route::post('/follow/{userId}', [\App\Http\Controllers\Api\V1\UserController::class, 'toggleFollow']);
+        Route::post('/follow/{userId}', [\App\Http\Controllers\Api\V1\FollowController::class, 'toggleFollow']);
+        Route::get('/follow/{userId}/followers', [\App\Http\Controllers\Api\V1\FollowController::class, 'getFollowers']);
+        Route::get('/follow/{userId}/following', [\App\Http\Controllers\Api\V1\FollowController::class, 'getFollowing']);
+        Route::get('/profile/{userId}', [\App\Http\Controllers\Api\V1\ProfileController::class, 'getProfile']);
         // Route::get('/videos/{video_id}/comments', [\App\Http\Controllers\Api\V1\CommentController::class,'getComments']);
-
+        Route::delete('/comment/reply/{replyId}', [\App\Http\Controllers\Api\V1\CommentController::class,'deleteReply']);
         // Route::post('/comments', [\App\Http\Controllers\Api\V1\CommentController::class,'store']);
     });
     Route::post('/register', [\App\Http\Controllers\Api\V1\AuthController::class, 'register']);

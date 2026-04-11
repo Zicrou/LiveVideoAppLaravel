@@ -15,7 +15,7 @@ use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
-class UserController extends Controller implements HasMiddleware
+class FollowController extends Controller implements HasMiddleware
 {    public static function middleware()
     {
         return [
@@ -32,7 +32,6 @@ class UserController extends Controller implements HasMiddleware
             'message' => 'You cannot follow yourself'
         ], 400);
     }
-
     $exists = DB::table('follows')
         ->where('follower_id', $authUser->id)
         ->where('following_id', $userId)
@@ -43,24 +42,38 @@ class UserController extends Controller implements HasMiddleware
             ->where('follower_id', $authUser->id)
             ->where('following_id', $userId)
             ->delete();
-
-        return response()->json([
-            'following' => false
+        $following = false;
+    }else{
+        DB::table('follows')->insert([
+            'id' => Str::uuid(),
+            'follower_id' => $authUser->id,
+            'following_id' => $userId,
+            'created_at' => now(),
+            'updated_at' => now(),
         ]);
+        $following = true;
     }
-
-    DB::table('follows')->insert([
-        'id' => Str::uuid(),
-        'follower_id' => $authUser->id,
-        'following_id' => $userId,
-        'created_at' => now(),
-        'updated_at' => now(),
-    ]);
-
+    $user = User::withCount('followers', 'following')->find($userId);
     return response()->json([
-        'following' => true
+        'following' => $following,
+        'followersCount' => $user->followers_count,
+        'followingCount' => $user->following_count
     ]);
 }
 
+    public function getFollowers($userId)
+    {
+        $followers = DB::table('follows')
+            ->where('following_id', $userId)
+            ->count();
+            // ->join('users', 'follows.follower_id', '=', 'users.id')
+            // ->select('users.id', 'users.name')
+            // ->count();
+            
+
+        return response()->json([
+            'followersCount' => $followers,
+        ]);
+    }
 }
     

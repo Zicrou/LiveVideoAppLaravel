@@ -126,23 +126,29 @@ class CommentController extends Controller implements HasMiddleware
 
     public function destroy(Request $request, $commentId){
         $user = $request->user();
-        // if(!$user){
-        //     return response()->json([
-        //         'message' => 'User not found'
-        //     ], 404);
-        // }
+        if(!$user){
+            return response()->json([
+                'message' => 'User not found'
+            ], 404);
+        }
             
         $comment = Comment::find($commentId);
-        // return['data' => $data];
-        
-        if(!$user && $comment->user_id !== $user->id){
+        if(!$comment){
             return response()->json([
-                'message' => 'Unauthorized'
+                'message' => 'Comment not found'
+            ], 404);
+        }
+        if($comment->user_id !== $user->id){
+            return response()->json([
+                'message' => 'Unauthorized',
             ], 403);
         }
+        $comment->replies()->delete();
         $comment->delete();
         return[
-            'comment' => $comment
+            'message' => 'Comment deleted successfully',
+            'status' => 'deleted',
+            'deletedCommentId' => true
         ];
     }
 
@@ -208,6 +214,34 @@ class CommentController extends Controller implements HasMiddleware
             'message' => 'Replied successfully',
             'comment' => $reply,
             'commentCount' => $video->comments_count
+        ];
+
+    }
+
+    public function deleteReply(Request $request, $replyId){
+        $user = $request->user();
+        if(!$user){
+            return response()->json([
+                'message' => 'User not found'
+            ], 404);
+        }
+            
+        $comment = Comment::find($replyId);
+        if(!$comment){
+            return response()->json([
+                'message' => 'Comment not found'
+            ], 404);
+        }
+        if($comment->user_id !== $user->id){
+            return response()->json([
+                'message' => 'Unauthorized',
+            ], 403);
+        }
+        $comment->delete();
+        return[
+            'message' => 'Reply deleted successfully',
+            'status' => 'deleted',
+            'deletedReplyId' => true
         ];
     }
 }

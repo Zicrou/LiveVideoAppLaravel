@@ -75,6 +75,17 @@ class User extends Authenticatable
         );
     }
 
+    public function likes()
+    {
+        return $this->hasMany(Like::class, 'user_id');
+    }
+
+    public function savedVideos()
+    {
+        return $this->hasMany(Save::class, 'user_id');
+    }
+
+
     /**
      * Get the attributes that should be cast.
      *

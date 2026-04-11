@@ -14,6 +14,7 @@ class Video extends Model
         'video_url',
         'owner_id',
         'post_id',
+        'is_following',
     ];
 
 
