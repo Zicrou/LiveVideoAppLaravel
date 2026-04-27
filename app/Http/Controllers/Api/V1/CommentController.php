@@ -45,17 +45,42 @@ class CommentController extends Controller implements HasMiddleware
             'errors' => $validator->errors()
         ], 422);
     }
-        $comments = Comment::with(['user', 'replies.user'])
-        ->withCount('likes')
-        ->withCount([
-                'likes as isLiked' => function ($query) use ($user) {
-                    $query->where('user_id', $user->id);
-                }
-            ])
-        ->where('video_id', $request->video_id)
+        // $comments = Comment::with(['user', 'replies.user'])
+        // ->withCount('likes')
+        // ->withCount([
+        //         'likes as isLiked' => function ($query) use ($user) {
+        //             $query->where('user_id', $user->id);
+        //         }
+        //     ])
+        // ->where('video_id', $request->video_id)
+        // ->whereNull('parent_id')
+        // ->latest()
+        // ->get();
+
+        $comments = Comment::query()
+        ->with(['user'])
         ->whereNull('parent_id')
-        ->latest()
-        ->get();
+    ->where('video_id', $request->video_id)
+    ->withCount('replies')
+    ->withCount('likes')
+    ->withCount([
+        'likes as isLiked' => function ($query) use ($user) {
+            $query->where('user_id', $user->id);
+        }
+    ])
+    ->with(['replies' => function ($query) use ($user) {
+            $query->withCount('likes')
+            
+                  ->withCount([
+                      'likes as isLiked' => function ($q) use ($user) {
+                          $q->where('user_id', $user->id);
+                      }
+                  ])
+                  ->with('user');
+        }
+    ])
+    ->latest()
+    ->get();
         return[
             'comments' => $comments,
             'commentsCount' => $comments->count(),
@@ -77,19 +102,22 @@ class CommentController extends Controller implements HasMiddleware
         ]);
         $video = Video::where('id',$data['video_id'])->with('comments')->withCount('comments')->first();
         // return['video' => $video->id];
-        $comment = Comment::create([
-            // 'owner_id' => $user->id,
-            'user_id' => $user->id,
-            'video_id' => $video->id,
-            'comment' => $data['comment'],
-            'parent_id' => $request->parent_id
-        ]);
-
-        return[
-            'message' => 'Video liked successfully',
-            'comment' => $comment,
-            'commentCount' => $video->comments_count
-        ];
+        if($video){
+            $comment = Comment::create([
+                // 'owner_id' => $user->id,
+                'user_id' => $user->id,
+                'video_id' => $video->id,
+                'comment' => $data['comment'],
+                'parent_id' => $request->parent_id
+            ]);
+            return[
+                'message' => 'Comment ajouté avec succés',
+                'comment' => $comment,
+                'commentCount' => $video->comments_count
+            ];
+        }else{
+            return["message" => "Video not found"];
+        }
     }
 
     public function update(Request $request, $commentId){
@@ -168,7 +196,7 @@ class CommentController extends Controller implements HasMiddleware
         if(!$likeComment){
             $this->storeCommentLike($user, $data['comment_id']);
             return['message' => 'Comment liked successfully',
-                    'count' => $likeComment->count()
+                    // 'count' => $likeComment->count()
             ];
         }else{
             $likeComment->delete();
@@ -203,20 +231,23 @@ class CommentController extends Controller implements HasMiddleware
         ]);
         $video = Video::where('id',$data['video_id'])->with('comments')->withCount('comments')->first();
         // return['video' => $video->id];
-        $reply = Comment::create([
-            // 'owner_id' => $user->id,
-            'user_id' => $user->id,
-            'video_id' => $data['video_id'],
-            'comment' => $data['comment'],
-            'parent_id' => $data['parent_id']
-        ]);
+        if($video){
+            $reply = Comment::create([
+                // 'owner_id' => $user->id,
+                'user_id' => $user->id,
+                'video_id' => $data['video_id'],
+                'comment' => $data['comment'],
+                'parent_id' => $data['parent_id']
+            ]);
 
-        return[
-            'message' => 'Replied successfully',
-            'comment' => $reply,
-            'commentCount' => $video->comments_count
-        ];
-
+            return[
+                'message' => 'Replied successfully',
+                'comment' => $reply,
+                'commentCount' => $video->comments_count
+            ];
+        }else{
+            return["message" => "Video not found"];
+        }
     }
 
     public function deleteReply(Request $request, $replyId){
