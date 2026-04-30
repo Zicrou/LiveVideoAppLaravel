@@ -23,46 +23,24 @@ class VideoController extends Controller implements HasMiddleware
     public static function middleware()
     {
         return [
-            new Middleware('auth:sanctum'),
+            (new Middleware('auth:sanctum'))->except(['index']),
         ];
     }
-    public function index(Request $request){
-        $user = $request->user();
-        $user_id = $user->id;
-        if(!$user){
-            return ['message' => "User not found"];
-        }
-
-        $followingIds = DB::table('follows')
-            ->where('follower_id', $user_id)
-            ->pluck('following_id')
-            ->toArray();
-        
-        $vids = Video::query()
-        ->with("owner")
-        ->withCount('likes')
-            ->withCount([
-                'likes as isLiked' => function ($query) use ($user_id) {
-                    $query->where('user_id', $user_id);
-                }
-            ])
+    public function index(){
+            $videos = Video::query()
+            ->select('*')
+            ->with("owner")
+            ->selectRaw('0 as isLiked, 0 as isSaveds') // 👈 force default values
+            ->withCount('likes')
             ->withCount('saveds')
-            ->withCount([
-                'saveds as isSaveds' => function ($query) use ($user_id) {
-                    $query->where('user_id', $user_id);
-                }
-            ])->latest()
             ->withCount(['comments' => function ($query) {
                 $query->whereNull('parent_id');
             }])
+            ->latest()
             ->get();
-            $videos = $vids->transform(function ($video) use ($followingIds) {
-                $video->is_following = in_array($video->owner_id, $followingIds);
-                return $video;
-            });
-        return[
-            "videos" => $videos
-        ];
+            return[
+                "videos" => $videos
+            ];
         // return VideoResource::collection(Video::withCount('likes')->with('likes')->get());
     }
 
@@ -215,4 +193,54 @@ class VideoController extends Controller implements HasMiddleware
         'videos' => $videos
     ]);
 }
+
+    public function getFollowingUsersVideos(Request $request){
+        $user = $request->user();
+        if(!$user){
+            return[
+                "message" => "User not found",
+            ];
+        }
+        
+        $user_id = $user->id;
+
+        $followingIds = DB::table('follows')
+            ->where('follower_id', $user_id)
+            ->pluck('following_id')
+            // ->with(['v', 'replies.user'])
+            ->toArray();
+
+            if (empty($followingIds)) {
+                return collect(); // or []
+            }
+            
+        $vids = Video::query()
+        ->whereIn('owner_id', $followingIds)
+        ->with("owner")
+        ->withCount('likes')
+            ->withCount([
+                'likes as isLiked' => function ($query) use ($user_id) {
+                    $query->where('user_id', $user_id);
+                }
+            ])
+            ->withCount('saveds')
+            ->withCount([
+                'saveds as isSaveds' => function ($query) use ($user_id) {
+                    $query->where('user_id', $user_id);
+                }
+            ])->latest()
+            ->withCount(['comments' => function ($query) {
+                $query->whereNull('parent_id');
+            }])
+            ->get();
+            $videos = $vids->transform(function ($video) use ($followingIds) {
+                $video->is_following = in_array($video->owner_id, $followingIds);
+                return $video;
+            });
+        return[
+            "videos" => $videos
+        ];
+
+    }
+        
 }

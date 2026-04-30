@@ -17,6 +17,7 @@ $q = '[0-9a-z\-]+';
 $userId = '[0-9a-z\-]+';
 $replyId = $id;
 Route::prefix('V1')->group(function () {
+        Route::get('/videos', [\App\Http\Controllers\Api\V1\VideoController::class, 'index']);
 
     Route::middleware('auth:sanctum')->group(function () {
         Route::get('/lives', [LiveController::class, 'index']);
@@ -39,12 +40,13 @@ Route::prefix('V1')->group(function () {
         Route::delete('/posts/{post}', [\App\Http\Controllers\Api\V1\PostController::class, 'destroy']);
 
         // Routes for Videos
-        Route::get('/videos', [\App\Http\Controllers\Api\V1\VideoController::class, 'index']);
+
         Route::post('/videos', [\App\Http\Controllers\Api\V1\VideoController::class, 'store']);
         Route::put('/videos/{id}', [\App\Http\Controllers\Api\V1\VideoController::class, 'update']);
         Route::delete('/videos/{id}', [\App\Http\Controllers\Api\V1\VideoController::class, 'destroy']);
         Route::post('/videos/{id}/share', [\App\Http\Controllers\Api\V1\VideoController::class, 'shareVideos']);
         Route::get('videos/search', [\App\Http\Controllers\Api\V1\VideoController::class, 'search']);
+        Route::get('videos/following', [\App\Http\Controllers\Api\V1\VideoController::class, 'getFollowingUsersVideos']);
         // Routes for Likes
         Route::get('/likes', [\App\Http\Controllers\Api\V1\LikeController::class, 'index']);
         Route::post('/likes', [\App\Http\Controllers\Api\V1\LikeController::class, 'store']);
