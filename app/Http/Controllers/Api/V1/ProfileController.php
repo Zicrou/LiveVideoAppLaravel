@@ -47,9 +47,9 @@ class ProfileController extends Controller implements HasMiddleware
                     $query->where('user_id', $userId);
                 }
             ])
-            ->withCount('saveds')
+            ->withCount('saves')
             ->withCount([
-                'saveds as isSaved' => function ($query) use ($userId) {
+                'saves as isSaved' => function ($query) use ($userId) {
                     $query->where('user_id', $userId);
                 }
             ])->latest()
@@ -69,9 +69,9 @@ class ProfileController extends Controller implements HasMiddleware
                     $query->where('user_id', $userId);
                 }
             ])
-            ->withCount('saveds')
+            ->withCount('saves')
             ->withCount([
-                'saveds as isSaved' => function ($query) use ($userId) {
+                'saves as isSaved' => function ($query) use ($userId) {
                     $query->where('user_id', $userId);
                 }
             ])
@@ -91,9 +91,9 @@ class ProfileController extends Controller implements HasMiddleware
                     $query->where('user_id', $userId);
                 }
             ])
-            ->withCount('saveds')
+            ->withCount('saves')
             ->withCount([
-                'saveds as isSaved' => function ($query) use ($userId) {
+                'saves as isSaved' => function ($query) use ($userId) {
                     $query->where('user_id', $userId);
                 }
             ])
@@ -110,6 +110,49 @@ class ProfileController extends Controller implements HasMiddleware
             'videos' => $videos,
             'liked' => $likedVideos,
             'saved' => $savedVideos,
+        ]);
+    }
+
+    public function getLikedVideosProfile(Request $request, $userId)
+    {
+        $user = $request->user();
+        if (!$user) {
+            return response()->json([
+                'message' => 'User not found'
+            ], 404);
+        }
+        $userProfile = User::withCount('followers', 'following', 'likes')->find($userId);
+        
+        if (!$userProfile) {
+            return response()->json([
+                'message' => 'User not found'
+            ], 404);
+        }
+            
+        $likedVideos = Video::query()
+            ->whereIn('id', function ($query) use ($userId) {
+                $query->select('video_id')
+                    ->from('likes')
+                    ->where('user_id', $userId);
+            })
+            ->withCount('likes')
+            ->withCount([
+                'likes as isLiked' => function ($query) use ($userId) {
+                    $query->where('user_id', $userId);
+                }
+            ])
+            ->withCount('saves')
+            ->withCount([
+                'saves as isSaved' => function ($query) use ($userId) {
+                    $query->where('user_id', $userId);
+                }
+            ])
+            ->withCount('comments')
+            ->latest()
+            ->get();
+
+       return response()->json([
+            'liked' => $likedVideos,
         ]);
     }
 

@@ -35,9 +35,9 @@ class PostController extends Controller implements HasMiddleware
         }
 
         $data = $request->validate([
-            'post_type' => 'required|in:text,image,video',
-            'video_url' => 'required|string',
-            'caption' => 'string|nullable',
+            'post_type' => ['required', 'in:text,image,video'],
+            'video_url' => ['nullable', 'string'],
+            'caption' => ['string', 'nullable'],
         ]);
         
         $post = Post::create([
@@ -71,11 +71,11 @@ class PostController extends Controller implements HasMiddleware
             ], 403);
         }
         $request->validate([
-            'post_type' => 'required|in:text,image,video',
-            'video_url' => 'string|nullable',
-            'image_url' => 'string|nullable',
-            'text' => 'string|nullable',
-            'caption' => 'string|nullable',
+            'post_type' => ['required', 'in:text,image,video'],
+            'video_url' => ['string', 'nullable'],
+            'image_url' => ['string', 'nullable'],
+            'text' => ['string', 'nullable'],
+            'caption' => ['string', 'nullable'],
         ]);
         $post->update([
             'post_type' => $request->post_type,
@@ -111,7 +111,7 @@ class PostController extends Controller implements HasMiddleware
                 'message' => 'Unauthorized'
             ], 403);
         }
-        $deleteVideoOnly = $request->validate(['delete_video' => 'boolean']);
+        $deleteVideoOnly = $request->validate(['delete_video' => ['boolean']]);
         if($deleteVideoOnly){
             $video = $post->video;
             if($video){

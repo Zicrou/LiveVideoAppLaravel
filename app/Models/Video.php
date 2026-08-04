@@ -35,7 +35,7 @@ class Video extends Model
         return Like::where('user_id', $user_id)->first();
     }
 
-    public function saveds()
+    public function saves()
     {
         return $this->hasMany(Save::class, 'video_id');
     }

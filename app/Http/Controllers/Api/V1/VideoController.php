@@ -30,9 +30,9 @@ class VideoController extends Controller implements HasMiddleware
             $videos = Video::query()
             ->select('*')
             ->with("owner")
-            ->selectRaw('0 as isLiked, 0 as isSaveds') // 👈 force default values
+            ->selectRaw('0 as isLiked, 0 as isSaved') // 👈 force default values
             ->withCount('likes')
-            ->withCount('saveds')
+            ->withCount('saves')
             ->withCount(['comments' => function ($query) {
                 $query->whereNull('parent_id');
             }])
@@ -180,9 +180,9 @@ class VideoController extends Controller implements HasMiddleware
                 $query->where('user_id', $user_id);
             }
         ])
-        ->withCount('saveds')
+        ->withCount('saves')
         ->withCount([
-            'saveds as isSaveds' => function ($query) use ($user_id) {
+            'saves as isSaved' => function ($query) use ($user_id) {
                 $query->where('user_id', $user_id);
             }
         ])->latest()
@@ -223,9 +223,9 @@ class VideoController extends Controller implements HasMiddleware
                     $query->where('user_id', $user_id);
                 }
             ])
-            ->withCount('saveds')
+            ->withCount('saves')
             ->withCount([
-                'saveds as isSaveds' => function ($query) use ($user_id) {
+                'saves as isSaved' => function ($query) use ($user_id) {
                     $query->where('user_id', $user_id);
                 }
             ])->latest()
