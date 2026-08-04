@@ -71,6 +71,7 @@ Route::prefix('V1')->group(function () {
         Route::get('/follow/{userId}/following', [\App\Http\Controllers\Api\V1\FollowController::class, 'getFollowing']);
         Route::get('/profile/{userId}', [\App\Http\Controllers\Api\V1\ProfileController::class, 'getProfile']);
         Route::get('/profile/{userId}/liked', [\App\Http\Controllers\Api\V1\ProfileController::class, 'getLikedVideosProfile']);
+        Route::get('/profile/{userId}/saved', [\App\Http\Controllers\Api\V1\ProfileController::class, 'getSavedVideosProfile']);
         // Route::get('/videos/{video_id}/comments', [\App\Http\Controllers\Api\V1\CommentController::class,'getComments']);
         Route::delete('/comment/reply/{replyId}', [\App\Http\Controllers\Api\V1\CommentController::class,'deleteReply']);
         Route::get('comments/replies/{replyId}', [\App\Http\Controllers\Api\V1\CommentController::class, 'getReply']);

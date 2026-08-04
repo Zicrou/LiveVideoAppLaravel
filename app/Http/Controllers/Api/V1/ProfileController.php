@@ -156,5 +156,47 @@ class ProfileController extends Controller implements HasMiddleware
         ]);
     }
 
+    public function getSavedVideosProfile(Request $request, $userId)
+    {
+        $user = $request->user();
+        if (!$user) {
+            return response()->json([
+                'message' => 'User not found'
+            ], 404);
+        }
+        $userProfile = User::withCount('followers', 'following', 'likes')->find($userId);
+        
+        if (!$userProfile) {
+            return response()->json([
+                'message' => 'User not found'
+            ], 404);
+        }
+            
+        $savedVideos = Video::query()
+            ->whereIn('id', function ($query) use ($userId) {
+                $query->select('video_id')
+                    ->from('saves')
+                    ->where('user_id', $userId);
+            })
+            ->withCount('likes')
+            ->withCount([
+                'likes as isLiked' => function ($query) use ($userId) {
+                    $query->where('user_id', $userId);
+                }
+            ])
+            ->withCount('saves')
+            ->withCount([
+                'saves as isSaved' => function ($query) use ($userId) {
+                    $query->where('user_id', $userId);
+                }
+            ])
+            ->withCount('comments')
+            ->latest()
+            ->get();
+
+       return response()->json([
+            'saved' => $savedVideos,
+        ]);
+    }
     
 }
