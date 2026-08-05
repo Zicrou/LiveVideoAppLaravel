@@ -152,7 +152,10 @@ class ProfileController extends Controller implements HasMiddleware
             ->get();
 
        return response()->json([
-            'liked' => $likedVideos,
+            'followers_count' => $userProfile->followers()->count(),
+            'following_count' => $userProfile->following()->count(),
+            'likes_count' => $userProfile->likes()->count(),
+            'videos' => $likedVideos,
         ]);
     }
 
@@ -195,7 +198,10 @@ class ProfileController extends Controller implements HasMiddleware
             ->get();
 
        return response()->json([
-            'saved' => $savedVideos,
+            'followers_count' => $userProfile->followers()->count(),
+            'following_count' => $userProfile->following()->count(),
+            'likes_count' => $userProfile->likes()->count(),
+            'videos' => $savedVideos,
         ]);
     }
     
